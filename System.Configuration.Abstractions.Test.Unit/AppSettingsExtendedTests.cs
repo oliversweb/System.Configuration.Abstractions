@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.Collections.Specialized;
+using System.ComponentModel;
 using System.Configuration.Abstractions.TypeConverters;
 using NUnit.Framework;
 
@@ -192,6 +193,79 @@ namespace System.Configuration.Abstractions.Test.Unit
             _underlyingConfiguration.Add("key-that-fails-cast", "NotSoTrue");
 
             Assert.Throws<FormatException>(() => _wrapper.AppSetting<bool>("key-that-fails-cast"));
+        }
+            
+        [Test]
+        public void Setting_WhenCastFailsUsingCustomValueTypeConverterAndActionNotSupplied_PerformsAction()
+        {
+            var expected = new Guid("71a9bb5c-6f5d-4e18-8609-5f729aa352e6");
+
+            _underlyingConfiguration = new NameValueCollection { { "someGuidVal", expected.ToString() } };
+
+            _wrapper = new AppSettingsExtended(_underlyingConfiguration, null, new[] { new CustomGuidConverter() });
+
+            var val = _wrapper.AppSetting<Guid>("someGuidVal");
+
+            Assert.That(val, Is.TypeOf<Guid>());
+
+            Assert.That(val, Is.EqualTo(expected));
+        }          
+        
+        [Test]
+        public void Setting_WhenCastFailsUsingCustomValueTypeConverterAndActionSupplied_PerformsAction()
+        {
+            var expected = Guid.Empty;
+
+            _underlyingConfiguration = new NameValueCollection { { "someGuidVal", "bad-guid" } };
+
+            _wrapper = new AppSettingsExtended(_underlyingConfiguration, null, new[] { new CustomGuidConverter() });
+
+            var val = _wrapper.AppSetting<Guid>("someGuidVal", whenConversionFailsInsteadOfThrowingDefaultException: () => Guid.Empty);
+
+            Assert.That(val, Is.TypeOf<Guid>());
+
+            Assert.That(val, Is.EqualTo(expected));
+        }
+        
+        [Test]
+        public void Setting_WhenValueIsMissingUsingCustomValueTypeConverterAndActionSupplied_PerformsAction()
+        {
+            var expected = Guid.Empty;
+
+            _underlyingConfiguration = new NameValueCollection { { "anotherGuidVal", "bad-guid" } };
+
+            _wrapper = new AppSettingsExtended(_underlyingConfiguration, null, new[] { new CustomGuidConverter() });
+
+            var val = _wrapper.AppSetting<Guid>("someMissingGuidVal", whenKeyNotFoundInsteadOfThrowingDefaultException: () => Guid.Empty);
+
+            Assert.That(val, Is.TypeOf<Guid>());
+
+            Assert.That(val, Is.EqualTo(expected));
+        }
+
+
+        [Test]
+        public void Setting_WhenValueIsMissingUsingCustomValueTypeConverterAndActionSuppliedOfTypeNull_PerformsAction()
+        {
+            _underlyingConfiguration = new NameValueCollection { { "anotherGuidVal", "bad-guid" } };
+
+            _wrapper = new AppSettingsExtended(_underlyingConfiguration, null, new[] { new CustomGuidConverter() });
+
+            var val = _wrapper.AppSetting<Guid?>("someMissingGuidVal", whenKeyNotFoundInsteadOfThrowingDefaultException: () => null);
+            
+            Assert.IsNull(val);
+        }
+
+        [Test]
+        public void Setting_WhenCustomValueTypeConverterCastFailsAndActionSuppliedOfTypeNull_PerformsAction()
+        {
+            _underlyingConfiguration = new NameValueCollection { { "someGuidVal", "bad-guid" } };
+
+            _wrapper = new AppSettingsExtended(_underlyingConfiguration, null, new[] { new CustomGuidConverter() });
+
+            var val = _wrapper.AppSetting<Guid?>("someGuidVal", whenConversionFailsInsteadOfThrowingDefaultException: () => null);
+
+            Assert.IsNull(val);
         }
 
         [Test]
@@ -446,4 +520,14 @@ namespace System.Configuration.Abstractions.Test.Unit
         public object Convert(string configurationValue) { return new UserType(); }
     }
     public class UserType { }
+
+    public class CustomGuidConverter : IConvertType
+    {
+        public Type TargetType { get { return typeof(Guid); } }
+
+        public object Convert(string configurationValue)
+        {
+            return Guid.Parse(configurationValue);
+        }
+    }
 }
