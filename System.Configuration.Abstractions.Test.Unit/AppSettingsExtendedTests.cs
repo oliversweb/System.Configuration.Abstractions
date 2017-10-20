@@ -196,7 +196,7 @@ namespace System.Configuration.Abstractions.Test.Unit
         }
             
         [Test]
-        public void Setting_WhenCastFailsUsingCustomValueTypeConverterAndActionNotSupplied_PerformsAction()
+        public void Setting_WhenGuidCastFailsUsingCustomValueTypeConverterAndActionNotSupplied_PerformsAction()
         {
             var expected = new Guid("71a9bb5c-6f5d-4e18-8609-5f729aa352e6");
 
@@ -212,7 +212,7 @@ namespace System.Configuration.Abstractions.Test.Unit
         }          
         
         [Test]
-        public void Setting_WhenCastFailsUsingCustomValueTypeConverterAndActionSupplied_PerformsAction()
+        public void Setting_WhenGuidCastFailsUsingCustomValueTypeConverterAndActionSupplied_PerformsAction()
         {
             var expected = Guid.Empty;
 
@@ -228,7 +228,7 @@ namespace System.Configuration.Abstractions.Test.Unit
         }
         
         [Test]
-        public void Setting_WhenValueIsMissingUsingCustomValueTypeConverterAndActionSupplied_PerformsAction()
+        public void Setting_WhenGuidValueIsMissingUsingCustomValueTypeConverterAndActionSupplied_PerformsAction()
         {
             var expected = Guid.Empty;
 
@@ -245,7 +245,7 @@ namespace System.Configuration.Abstractions.Test.Unit
 
 
         [Test]
-        public void Setting_WhenValueIsMissingUsingCustomValueTypeConverterAndActionSuppliedOfTypeNull_PerformsAction()
+        public void Setting_WhenGuidValueIsMissingUsingCustomValueTypeConverterAndActionSuppliedOfTypeNull_PerformsAction()
         {
             _underlyingConfiguration = new NameValueCollection { { "anotherGuidVal", "bad-guid" } };
 
@@ -257,7 +257,7 @@ namespace System.Configuration.Abstractions.Test.Unit
         }
 
         [Test]
-        public void Setting_WhenCustomValueTypeConverterCastFailsAndActionSuppliedOfTypeNull_PerformsAction()
+        public void Setting_WhenGuidCustomValueTypeConverterCastFailsAndActionSuppliedOfTypeNull_PerformsAction()
         {
             _underlyingConfiguration = new NameValueCollection { { "someGuidVal", "bad-guid" } };
 
